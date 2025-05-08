@@ -1,0 +1,72 @@
+Basic Switch Security Configuration
+=================================================================
+
+Switchport Security
+-----------------------
+Switch(config)#int f0/1 
+Switch(config-if)#switchport mode access 
+Switch(config-if)#switchport port-security 
+Switch(config-if)#switchport port-security aging time 120
+Switch(config-if)#switchport port-security maximum 2
+Switch(config-if)#switchport port-security mac-address sticky 
+Switch(config-if)#switchport port-security violation shutdown 
+Switch(config-if)#exit 
+
+Unused POrts-----------------------------
+Switch(config)#int ran f0/4-24, g0/1-2
+Switch(config-if)#switchport mode access 
+Switch(config-if)#switchport port-security
+Switch(config-if)#switchport nonegotiate
+Switch(config-if)#spanning-tree bpduguard enable 
+Switch(config-if)#spanning-tree portfast 
+Switch(config-if-range)#shutdown 
+Switch(config-if-range)#exit
+
+VLAN attack mitigation
+-----------------------------
+Switch(config)#int f0/2
+Switch(config-if)#switchport mode trunk 
+Switch(config-if)#switchport nonegotiate 
+Switch(config-if)#ex
+
+Switch(config)#int ran f0/13-24
+Switch(config-if-range)#switchport mode access 
+Switch(config-if-range)#switchport access vlan 20
+Switch(config-if-range)#exit
+
+Switch(config)#vlan 99
+Switch(config-vlan)#name native
+Switch(config-vlan)#ex
+
+Switch(config)#int f0/2
+Switch(config-if)#switchport trunk native vlan 99
+Switch(config-if)#exit
+
+DHCP snooping & ARP Inspection
+------------------------------
+
+Switch(config)#ip dhcp snooping 
+Switch(config)#int g0/1
+Switch(config-if)#ip dhcp snooping trust 
+Switch(config)#ip arp inspection trust
+Switch(config-if)#exit
+Switch(config)#int f0/1
+Switch(config-if)#ip dhcp snooping limit rate 5
+Switch(config-if)#exit
+Switch(config)#ip dhcp snooping vlan 10
+Switch(config)#ip arp inspection vlan 10
+Switch(config)#ip arp inspection validate dsc-mac src-mac ip
+
+STP---------------------
+Switch(config)#int f0/1
+Switch(config-if)#spanning-tree bpduguard enable 
+Switch(config-if)#spanning-tree portfast 
+Switch(config-if)#exit
+
+Switch(config)#spanning-tree portfast bpduguard default 
+
+CDP-----------------------
+Switch(config)#no cdp run
+
+LLDP-----------------------
+Switch(config)#no lldp run

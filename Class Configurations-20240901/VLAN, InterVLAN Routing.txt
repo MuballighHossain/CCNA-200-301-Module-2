@@ -1,0 +1,167 @@
+1. VLAN Creation
+-----------------------------------------------------------
+Fri Jul 5 10:53:28 2024   Core   Switch>en
+Fri Jul 5 10:53:29 2024   Core   Switch#conf t
+Fri Jul 5 10:53:33 2024   Core   Switch(config)#hostname Core
+Fri Jul 5 10:53:47 2024   Core   Core(config)#vlan 2
+Fri Jul 5 10:53:50 2024   Core   Core(config-vlan)#name Sales
+Fri Jul 5 10:53:51 2024   Core   Core(config-vlan)#exit
+Fri Jul 5 10:53:52 2024   Core   Core(config)#vlan 3
+Fri Jul 5 10:54:01 2024   Core   Core(config-vlan)#name Marketing
+Fri Jul 5 10:54:02 2024   Core   Core(config-vlan)#exit
+Fri Jul 5 10:54:05 2024   Core   Core(config)#vlan 4
+Fri Jul 5 10:54:07 2024   Core   Core(config-vlan)#name Voice
+Fri Jul 5 10:54:08 2024   Core   Core(config-vlan)#exit
+Fri Jul 5 10:54:11 2024   Core   Core(config)#vlan 5
+Fri Jul 5 10:54:16 2024   Core   Core(config-vlan)#name Management
+Fri Jul 5 10:54:17 2024   Core   Core(config-vlan)#exit
+Fri Jul 5 10:54:20 2024   Core   Core(config)#vlan 9
+Fri Jul 5 10:54:22 2024   Core   Core(config-vlan)#name Native
+Fri Jul 5 10:54:24 2024   Core   Core(config-vlan)#exit
+
+View VLAN database
+-------------------------------------------
+Fri Jul 5 10:54:28 2024   Core   Core(config)#do show vlan brief
+
+2. VTP Configuration
+----------------------------------------------
+Fri Jul 5 10:59:18 2024   Core   Core(config)#vtp mode server
+Fri Jul 5 10:59:24 2024   Core   Core(config)#vtp domain aiub
+Fri Jul 5 10:59:31 2024   Core   Core(config)#vtp password cisco
+
+Fri Jul 5 10:59:47 2024   ALSW1   Switch>en
+Fri Jul 5 10:59:49 2024   ALSW1   Switch#conf t
+Fri Jul 5 10:59:56 2024   ALSW1   Switch(config)#hostname ALSW1
+Fri Jul 5 11:00:05 2024   ALSW1   ALSW1(config)#vtp mode client
+Fri Jul 5 11:00:10 2024   ALSW1   ALSW1(config)#vtp domain aiub
+Fri Jul 5 11:00:15 2024   ALSW1   ALSW1(config)#vtp password cisco
+
+Fri Jul 5 11:06:26 2024   ALSW2   Switch>en
+Fri Jul 5 11:06:27 2024   ALSW2   Switch#conf t
+Fri Jul 5 11:06:30 2024   ALSW2   Switch(config)#hostname ALSW2
+Fri Jul 5 11:06:34 2024   ALSW2   ALSW2(config)#vtp mode client
+Fri Jul 5 11:06:38 2024   ALSW2   ALSW2(config)#vtp domain aiub
+Fri Jul 5 11:06:49 2024   ALSW2   ALSW2(config)#vtp password cisco
+
+
+3. Trunk on switch-to-switch ports
+-------------------------------------------------
+Fri Jul 5 11:03:50 2024   Core   Core(config)#int range f0/1-2
+Fri Jul 5 11:03:54 2024   Core   Core(config-if-range)#switchport mode trunk 
+Fri Jul 5 11:03:58 2024   Core   Core(config-if-range)#exit
+
+Fri Jul 5 11:04:18 2024   ALSW1   ALSW1(config)#int range f0/1, f0/4
+Fri Jul 5 11:04:24 2024   ALSW1   ALSW1(config-if-range)#switchport mode trunk 
+Fri Jul 5 11:04:28 2024   ALSW1   ALSW1(config-if-range)#exit
+
+Fri Jul 5 11:06:57 2024   ALSW2   ALSW2(config)#int range f0/2, f0/4
+Fri Jul 5 11:06:59 2024   ALSW2   ALSW2(config-if-range)#switchport mode trunk 
+Fri Jul 5 11:07:01 2024   ALSW2   ALSW2(config-if-range)#exit
+
+4. VLAN assign on ports (switch to end device) + Voice VLAN
+------------------------------------------------------------
+Fri Jul 5 11:12:51 2024   ALSW1   ALSW1(config)#int f0/2
+Fri Jul 5 11:12:57 2024   ALSW1   ALSW1(config-if)#switchport mode access 
+Fri Jul 5 11:13:23 2024   ALSW1   ALSW1(config-if)#switchport access vlan 2
+Fri Jul 5 11:13:24 2024   ALSW1   ALSW1(config-if)#ex
+
+Fri Jul 5 11:13:28 2024   ALSW1   ALSW1(config)#int f0/3
+Fri Jul 5 11:13:31 2024   ALSW1   ALSW1(config-if)#switchport mode access 
+Fri Jul 5 11:13:34 2024   ALSW1   ALSW1(config-if)#switchport access vlan 3
+Fri Jul 5 11:13:36 2024   ALSW1   ALSW1(config-if)#exit
+
+Fri Jul 5 11:20:24 2024   ALSW2   ALSW2(config)#int f0/5
+Fri Jul 5 11:20:40 2024   ALSW2   ALSW2(config-if)#switchport mode access
+Fri Jul 5 11:20:45 2024   ALSW2   ALSW2(config-if)#switchport access vlan 2
+Fri Jul 5 11:21:04 2024   ALSW2   ALSW2(config-if)#switchport voice vlan 4
+Fri Jul 5 11:21:28 2024   ALSW2   ALSW2(config-if)#mls qos trust cos 
+Fri Jul 5 11:23:17 2024   ALSW2   ALSW2(config-if)#exit
+
+
+5. Inter VLAN Routing (Router On A Stick)
+-----------------------------------------------------------
+Fri Jul 5 11:31:15 2024   BR   Router>en
+Fri Jul 5 11:31:16 2024   BR   Router#conf t
+Fri Jul 5 11:31:18 2024   BR   Router(config)#hostname BR
+Fri Jul 5 11:31:30 2024   BR   BR(config)#int f0/1
+Fri Jul 5 11:31:54 2024   BR   BR(config-if)#no shutdown 
+Fri Jul 5 11:31:56 2024   BR   BR(config-if)#exit
+
+Fri Jul 5 11:32:01 2024   BR   BR(config)#int f0/1.2
+Fri Jul 5 11:32:05 2024   BR   BR(config-subif)#encapsulation dot1Q 2
+Fri Jul 5 11:32:12 2024   BR   BR(config-subif)#ip add 172.16.2.1 255.255.255.0
+Fri Jul 5 11:32:16 2024   BR   BR(config-subif)#description Sales
+Fri Jul 5 11:32:17 2024   BR   BR(config-subif)#exit
+
+Fri Jul 5 11:32:24 2024   BR   BR(config)#int f0/1.3
+Fri Jul 5 11:32:28 2024   BR   BR(config-subif)#encapsulation dot1Q 3
+Fri Jul 5 11:32:33 2024   BR   BR(config-subif)#ip add 172.16.3.1 255.255.255.0
+Fri Jul 5 11:32:39 2024   BR   BR(config-subif)#description Marketing
+Fri Jul 5 11:32:40 2024   BR   BR(config-subif)#exit
+
+Fri Jul 5 11:32:43 2024   BR   BR(config)#int f0/1.4
+Fri Jul 5 11:32:46 2024   BR   BR(config-subif)#encapsulation dot1Q 4
+Fri Jul 5 11:32:54 2024   BR   BR(config-subif)#ip add 172.16.4.1 255.255.255.128
+Fri Jul 5 11:32:59 2024   BR   BR(config-subif)#description Voice
+Fri Jul 5 11:32:59 2024   BR   BR(config-subif)#ex
+
+Fri Jul 5 11:33:03 2024   BR   BR(config)#int f0/1.5
+Fri Jul 5 11:33:06 2024   BR   BR(config-subif)#encapsulation dot1Q 5
+Fri Jul 5 11:33:12 2024   BR   BR(config-subif)#ip add 172.16.5.1 255.255.255.128
+Fri Jul 5 11:33:17 2024   BR   BR(config-subif)#description Management
+Fri Jul 5 11:33:18 2024   BR   BR(config-subif)#exit
+
+Fri Jul 5 11:33:23 2024   BR   BR(config)#int f0/1.9
+Fri Jul 5 11:33:33 2024   BR   BR(config-subif)#encapsulation dot1Q 9
+Fri Jul 5 11:33:39 2024   BR   BR(config-subif)#ip add 172.16.9.1 255.255.255.128
+Fri Jul 5 11:33:41 2024   BR   BR(config-subif)#exit
+
+* switch to router connected ports must be trunk mode----------------
+Fri Jul 5 11:42:23 2024   Core   Core(config)#int f0/3
+Fri Jul 5 11:42:27 2024   Core   Core(config-if)#switchport mode trunk 
+Fri Jul 5 11:42:29 2024   Core   Core(config-if)#exit
+
+Fri Jul 5 11:46:19 2024   Switch3   Switch#show interfaces trunk 
+
+
+6. Native VLAN Config
+----------------------------------------
+Fri Jul 5 11:50:18 2024   Core   Core(config)#int range f0/1-3
+Fri Jul 5 11:50:29 2024   Core   Core(config-if-range)#switchport trunk native vlan 9
+Fri Jul 5 12:00:49 2024   Core   Core(config-if-range)#exit
+
+Fri Jul 5 11:51:15 2024   ALSW1   ALSW1(config)#int range f0/1, f0/4
+Fri Jul 5 11:51:25 2024   ALSW1   ALSW1(config-if-range)#switchport trunk native vlan 9
+Fri Jul 5 11:51:26 2024   ALSW1   ALSW1(config-if-range)#ex
+
+Fri Jul 5 11:51:58 2024   ALSW2   ALSW2(config)#int range f0/2,f0/4
+Fri Jul 5 11:52:02 2024   ALSW2   ALSW2(config-if-range)#switchport trunk native vlan 9
+Fri Jul 5 11:52:02 2024   ALSW2   ALSW2(config-if-range)#ex
+
+7. Management VLAN
+-------------------------------------------
+Fri Jul 5 12:03:21 2024   Core   Core(config)#enable secret ccna
+
+Fri Jul 5 12:00:57 2024   Core   Core(config)#line vty 0 4
+Fri Jul 5 12:01:02 2024   Core   Core(config-line)#password ccna
+Fri Jul 5 12:01:04 2024   Core   Core(config-line)#login
+Fri Jul 5 12:01:06 2024   Core   Core(config-line)#exit
+
+Fri Jul 5 12:01:23 2024   Core   Core(config)#int vlan 5
+Fri Jul 5 12:01:52 2024   Core   Core(config-if)#ip add 172.16.5.5 255.255.255.128
+Fri Jul 5 12:01:55 2024   Core   Core(config-if)#no sh
+Fri Jul 5 12:01:56 2024   Core   Core(config-if)#exit
+Fri Jul 5 12:02:07 2024   Core   Core(config)#ip default-gateway 172.16.5.1
+
+**do same for ALSW1 and ALSW2
+
+
+10. Backup all configurations
+-----------------------------------------
+Core#copy running-config startup-config 
+Destination filename [startup-config]? 
+Building configuration...
+[OK]
+
+* do this on all devices
+

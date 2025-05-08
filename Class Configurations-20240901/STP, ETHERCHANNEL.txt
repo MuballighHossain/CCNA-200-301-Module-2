@@ -1,0 +1,66 @@
+Spanning Tree Protocol (STP)
+=============================================================================================
+portfast and BPDU guard enable [on access ports only where host is connected]
+--------------------------------------------------------------------------------------
+Switch0   Switch(config)#int f0/10
+Switch0   Switch(config-if)#spanning-tree portfast 
+Switch0   Switch(config-if)#spanning-tree bpduguard enable 
+Switch0   Switch(config-if)#exit
+
+View STP-----------------------------------------------------------------------
+Switch2   Switch#show spanning-tree summary 
+
+STP Mode COnfiguration--------------------------------------------------------------------
+Switch2   Switch(config)#spanning-tree mode rapid-pvst 
+Switch1   Switch(config)#spanning-tree mode rapid-pvst 
+Switch0   Switch(config)#spanning-tree mode rapid-pvst 
+
+Switch0   Switch(config)#spanning-tree vlan 10,20 root primary 
+Switch0   Switch(config)#spanning-tree vlan 30,40 root secondary 
+
+Switch1   Switch(config)#spanning-tree vlan 30,40 root primary 
+Switch1   Switch(config)#spanning-tree vlan 10,20 root secondary 
+
+
+Etherchannel COnfiguration
+======================================================================================================
+using PAgP------------------------------------------------------------------------------------------
+Switch2   Switch(config)#int ran f0/3-4
+Switch2   Switch(config-if-range)#channel-group 1 mode desirable 
+Switch2   Switch(config-if-range)#exit
+
+Switch1   Switch(config)#int ran f0/3-4
+Switch1   Switch(config-if-range)#channel-group 1 mode desirable 
+Switch1   Switch(config-if-range)#exit
+
+Switch2   Switch(config)#interface port-channel 1
+Switch2   Switch(config-if)#switchport mode trunk 
+Switch2   Switch(config-if)#switchport trunk allowed vlan 10,20,30,40
+Switch2   Switch(config-if)#exit
+
+Switch1   Switch(config)#interface port-channel 1
+Switch1   Switch(config-if)#switchport mode trunk 
+Switch1   Switch(config-if)#switchport trunk allowed vlan 10,20,30,40
+Switch1   Switch(config-if)#exit
+
+using LACP--------------------------------------------------------------------------------------------
+Switch2   Switch(config)#int ran f0/2, f0/5
+Switch2   Switch(config-if-range)#channel-group 2 mode active
+Switch2   Switch(config-if-range)#exit
+
+Switch2   Switch(config)#interface port-channel 2
+Switch2   Switch(config-if)#switchport mode trunk 
+Switch2   Switch(config-if)#switchport trunk allowed vlan 10,20,30,40
+Switch2   Switch(config-if)#ex
+
+Switch0   Switch(config)#int ran f0/2, f0/5
+Switch0   Switch(config-if-range)#channel-group 2 mode passive 
+Switch(config-if-range)#ex
+
+Switch0   Switch(config)#interface port-channel 2
+Switch0   Switch(config-if)#switchport mode trunk 
+Switch0   Switch(config-if)#switchport trunk allowed vlan 10,20,30,40
+Switch0   Switch(config-if)#ex
+
+View Etherchannel-----------------------------------------------------------------------------------
+Switch2   Switch#show etherchannel summary 

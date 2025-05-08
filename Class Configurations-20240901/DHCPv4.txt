@@ -1,0 +1,77 @@
+Basic IP Configuration
+--------------------------------------
+Fri Nov 24 18:28:56 2023   Router0   Router>en
+Fri Nov 24 18:28:58 2023   Router0   Router#conf t
+Fri Nov 24 18:29:01 2023   Router0   Router(config)#hostname AIUB
+Fri Nov 24 18:29:03 2023   Router0   AIUB(config)#int f0/0
+Fri Nov 24 18:29:09 2023   Router0   AIUB(config-if)#ip add 172.16.1.1 255.255.255.0
+Fri Nov 24 18:29:10 2023   Router0   AIUB(config-if)#no shutdown 
+Fri Nov 24 18:29:13 2023   Router0   AIUB(config-if)#ex
+Fri Nov 24 18:29:15 2023   Router0   AIUB(config)#int f0/1
+Fri Nov 24 18:29:21 2023   Router0   AIUB(config-if)#ip add 172.16.2.1 255.255.255.128
+Fri Nov 24 18:29:23 2023   Router0   AIUB(config-if)#no shutdown 
+Fri Nov 24 18:29:23 2023   Router0   AIUB(config-if)#ex
+
+1. Relay DHCP
+=====================================
+Go to DHCP Server> Services Tab> DHCP > On > Create POOL for Student Network.
+
+Fri Nov 24 18:42:07 2023   Router0   AIUB(config)#int f0/0
+Fri Nov 24 18:42:27 2023   Router0   AIUB(config-if)#ip helper-address 172.16.2.4
+Fri Nov 24 18:42:30 2023   Router0   AIUB(config-if)#exit
+Fri Nov 24 18:53:17 2023   Router0   AIUB>en
+
+2. Router As A DHCP Service
+======================================
+Fri Nov 24 18:53:24 2023   Router0   AIUB(config)#ip dhcp pool Student-Pool
+Fri Nov 24 18:53:34 2023   Router0   AIUB(dhcp-config)#network 172.16.1.0 255.255.255.0
+Fri Nov 24 18:53:48 2023   Router0   AIUB(dhcp-config)#default-router 172.16.1.1
+Fri Nov 24 18:53:56 2023   Router0   AIUB(dhcp-config)#dns-server 172.16.2.2
+Fri Nov 24 18:53:57 2023   Router0   AIUB(dhcp-config)#exit
+Fri Nov 24 18:54:08 2023   Router0   AIUB(config)#ip dhcp excluded-address 172.16.1.1 172.16.1.20
+
+At this point, Extended topology. Configure New Interface.
+
+3. Router As A DHCP Client
+===========================================
+Fri Nov 24 19:10:33 2023   AIUB   AIUB(config)#int f1/0
+Fri Nov 24 19:10:42 2023   AIUB   AIUB(config-if)#ip add 172.16.10.1 255.255.255.252
+Fri Nov 24 19:10:44 2023   AIUB   AIUB(config-if)#no shutdown 
+Fri Nov 24 19:10:45 2023   AIUB   AIUB(config-if)#exit
+
+Fri Nov 24 19:10:54 2023   AIUB   AIUB(config)#ip dhcp pool P2P-Pool
+Fri Nov 24 19:11:07 2023   AIUB   AIUB(dhcp-config)#network 172.16.10.0 255.255.255.252
+Fri Nov 24 19:11:12 2023   AIUB   AIUB(dhcp-config)#default-router 172.16.10.1
+Fri Nov 24 19:11:13 2023   AIUB   AIUB(dhcp-config)#ex
+
+Fri Nov 24 19:33:00 2023   ICE   ICE(config)#int f0/1
+Fri Nov 24 19:33:06 2023   ICE   ICE(config-if)#ip add 172.16.3.1 255.255.255.0
+Fri Nov 24 19:33:08 2023   ICE   ICE(config-if)#no sh
+Fri Nov 24 19:33:08 2023   ICE   ICE(config-if)#exit
+
+here, this f0/0 interface is requesting for IP from DHCP P2P Pool
+-----------------------------------------------------------------------
+Fri Nov 24 19:11:36 2023   ICE   Router(config)#hostname ICE
+Fri Nov 24 19:11:39 2023   ICE   ICE(config)#int f0/0
+Fri Nov 24 19:11:45 2023   ICE   ICE(config-if)#no shutdown
+Fri Nov 24 19:12:08 2023   ICE   ICE(config-if)#ip address dhcp
+Fri Nov 24 19:12:11 2023   ICE   ICE(config-if)#exit
+
+
+Create DHCP Pool for Teacher Network in AIUB ROuter. COnfigure Replay DHCP
+==================================================================================
+Fri Nov 24 19:33:25 2023   AIUB   AIUB(config)#ip dhcp pool Teacher-Pool
+Fri Nov 24 19:33:32 2023   AIUB   AIUB(dhcp-config)#network 172.16.3.0 255.255.255.0
+Fri Nov 24 19:33:36 2023   AIUB   AIUB(dhcp-config)#default-router 172.16.3.1
+Fri Nov 24 19:33:39 2023   AIUB   AIUB(dhcp-config)#dns-server 172.16.2.2
+Fri Nov 24 19:33:40 2023   AIUB   AIUB(dhcp-config)#ex
+Fri Nov 24 19:33:51 2023   AIUB   AIUB(config)#ip dhcp excluded-address 172.16.3.1 172.16.3.10
+
+Fri Nov 24 19:33:00 2023   ICE   ICE(config)#int f0/1
+Fri Nov 24 19:35:21 2023   ICE   ICE(config-if)#ip helper-address 172.16.10.1
+Fri Nov 24 19:33:00 2023   ICE   ICE(config-if)#exit
+
+For this relay to work, must configure routing!
+--------------------------------------------------------------
+Fri Nov 24 19:38:37 2023   AIUB   AIUB(config)#ip route 172.16.0.0 255.240.0.0 172.16.10.2
+Fri Nov 24 19:38:59 2023   ICE   ICE(config-if)#ip route 172.16.0.0 255.240.0.0  172.16.10.1

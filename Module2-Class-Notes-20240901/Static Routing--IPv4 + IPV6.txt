@@ -1,0 +1,196 @@
+--------------------------------Static Routing------------------------------------------------
+
+Firstly, You need to configure router interfaces and configure IP on End Devices.
+Router Used - 2811, Switch USed - 2960
+
+1. Basic IP Configuration
+--------------------------------------------
+Fri Jun 7 10:55:33 2024   BR1   Router>enable
+Fri Jun 7 10:55:46 2024   BR1   Router#configure terminal 
+Fri Jun 7 10:55:55 2024   BR1   Router(config)#hostname BR1
+Fri Jun 7 10:56:12 2024   BR1   BR1(config)#int f0/0
+Fri Jun 7 10:56:25 2024   BR1   BR1(config-if)#ip add 172.16.1.1 255.255.255.0
+Fri Jun 7 10:56:25 2024   BR1   BR1(config-if)#ipv6 add 2001:211:DAC:1::1/64
+Fri Jun 7 10:56:30 2024   BR1   BR1(config-if)#description Sales LAN
+Fri Jun 7 10:56:33 2024   BR1   BR1(config-if)#no shutdown 
+Fri Jun 7 10:56:36 2024   BR1   BR1(config-if)#exit
+Fri Jun 7 10:56:41 2024   BR1   BR1(config)#int f0/1
+Fri Jun 7 10:56:48 2024   BR1   BR1(config-if)#ip add 172.16.2.1 255.255.255.128
+Fri Jun 7 10:56:25 2024   BR1   BR1(config-if)#ipv6 add 2001:211:DAC:2::1/64
+Fri Jun 7 10:56:55 2024   BR1   BR1(config-if)#description Marketing LAN
+Fri Jun 7 10:56:57 2024   BR1   BR1(config-if)#no shutdown 
+Fri Jun 7 10:56:59 2024   BR1   BR1(config-if)#exit
+
+Fri Jun 7 10:59:42 2024   BR2   Router>en
+Fri Jun 7 10:59:43 2024   BR2   Router#conf t
+Fri Jun 7 10:59:45 2024   BR2   Router(config)#hostname BR2
+Fri Jun 7 10:59:47 2024   BR2   BR2(config)#int f0/0
+Fri Jun 7 10:59:57 2024   BR2   BR2(config-if)#ip add 172.16.3.1 255.255.255.192
+Fri Jun 7 10:56:25 2024   BR2   BR2(config-if)#ipv6 add 2001:211:DAC:3::1/64
+Fri Jun 7 11:00:00 2024   BR2   BR2(config-if)#description HR LAN
+Fri Jun 7 11:00:02 2024   BR2   BR2(config-if)#no shutdown 
+Fri Jun 7 11:00:03 2024   BR2   BR2(config-if)#ex
+Fri Jun 7 11:00:05 2024   BR2   BR2(config)#int f0/1
+Fri Jun 7 11:00:14 2024   BR2   BR2(config-if)#ip add 172.16.4.1 255.255.255.224
+Fri Jun 7 10:56:25 2024   BR2   BR2(config-if)#ipv6 add 2001:211:DAC:4::1/64
+Fri Jun 7 11:00:17 2024   BR2   BR2(config-if)#description Server LAN
+Fri Jun 7 11:00:21 2024   BR2   BR2(config-if)#no shutdown 
+Fri Jun 7 11:00:22 2024   BR2   BR2(config-if)#ex
+Fri Jun 7 11:03:01 2024   BR1   BR1(config)#exit
+
+BR1(config)#ipv6 unicast-routing
+BR2(config)#ipv6 unicast-routing
+
+Fri Jun 7 11:03:05 2024   BR1   BR1#copy running-config startup-config 
+Fri Jun 7 11:04:06 2024   BR2   BR2#copy running-config startup-config 
+
+After backing up configuration, turn off router. Add serial module (HWIC-2T). Turn on router. 
+
+1.1 Basic IP Configuration on point-to-point interfaces
+-----------------------------------------------------------
+Fri Jun 7 11:07:49 2024   BR1   BR1>en
+Fri Jun 7 11:07:51 2024   BR1   BR1#conf t
+Fri Jun 7 11:08:08 2024   BR1   BR1(config)#int s0/1/0
+Fri Jun 7 11:08:31 2024   BR1   BR1(config-if)#ip add 172.16.10.1 255.255.255.252
+Fri Jun 7 10:56:25 2024   BR1   BR1(config-if)#ipv6 add 2001:211:DAC:10::1/64
+Fri Jun 7 11:08:37 2024   BR1   BR1(config-if)#description Link to BR2
+Fri Jun 7 11:08:39 2024   BR1   BR1(config-if)#no shutdown 
+Fri Jun 7 11:08:41 2024   BR1   BR1(config-if)#exit
+
+Fri Jun 7 11:09:14 2024   BR2   BR2(config)#int s0/3/0
+Fri Jun 7 11:09:24 2024   BR2   BR2(config-if)#ip add 172.16.10.2 255.255.255.252
+Fri Jun 7 10:56:25 2024   BR2   BR2(config-if)#ipv6 add 2001:211:DAC:10::1/64
+Fri Jun 7 11:09:29 2024   BR2   BR2(config-if)#description Link to BR1
+Fri Jun 7 11:09:31 2024   BR2   BR2(config-if)#no shutdown 
+Fri Jun 7 11:09:31 2024   BR2   BR2(config-if)#ex
+
+
+View Routing Table
+-----------------------------------------
+Fri Jun 7 11:11:06 2024   BR1   BR1#show ip route
+Fri Jun 7 11:22:01 2024   BR1   BR1(config)#do show ip route
+
+Standard Static Routing
+--------------------------------------------------------
+1. Sales wants to communicate with HR
+---------------------------------------------(using self exiting interface)
+Fri Jun 7 11:21:07 2024   BR1   BR1(config)#ip route 172.16.3.0 255.255.255.192 s0/1/0
+                                BR1(config)#ipv6 route 2001:211:DAC:3::/64 s0/1/0
+
+(using next hop IP address)-------------------------------------
+Fri Jun 7 11:26:38 2024   BR2   BR2(config)#ip route 172.16.1.0 255.255.255.0 172.16.10.1
+                                BR2(config)#ipv6 route 2001:211:DAC:1::/64 2001:211:DAC:10::1
+
+2. Host based Static Routing
+-----------------------------------------------------------
+Sales can communiate with DNS Server only!
+------------------------------------------------------------ 
+Fri Jun 7 11:33:06 2024   BR1   BR1(config)#ip route 172.16.4.3 255.255.255.255 172.16.10.2
+                                BR1(config)#ipv6 route 2001:211:DAC:4::4/128 2001:211:DAC:10::2
+
+Remove a route
+-----------------------------------------------------
+Fri Jun 7 11:41:53 2024   BR2   BR2(config)#no ip route 172.16.1.0 255.255.255.0 172.16.10.1
+                                BR2(config)#no ipv6 route 2001:211:DAC:1::/64 2001:211:DAC:10::1
+
+
+3. Summary Static Routing
+---------------------------------------------------
+summary of sales and marketing network
+---------------------------------------------------
+Fri Jun 7 11:42:51 2024   BR2   BR2(config)#ip route 172.16.0.0 255.255.252.0 172.16.10.1
+
+Whole Network Summary --- BR2(config)#ipv6 route 2001:211:DAC::/48 s0/3/0
+
+**created a route summary{sales + marketing lan}---------------------------------------------
+172.16.1.0 = 10101100 00010000 000000|01 00000000
+172.16.2.0 = 10101100 00010000 000000|10 00000000
+summary    = 10101100 00010000 000000|00 00000000 [write the bits as it is for matched bits. all other unmatched bits are written as zero]
+
+summary address = 172.16.0.0/22 [prefix is the number of matches bits]
+
+---------------**DHCPv4**----------------------------
+
+Router as a dhcp Server (on BR2)
+[sales lan should receive ip via dhcp]
+------------------------------------------------------------------
+Fri Jun 7 12:39:01 2024   BR2   BR2(config)#ip dhcp pool Sales
+Fri Jun 7 12:39:09 2024   BR2   BR2(dhcp-config)#network 172.16.1.0 255.255.255.0
+Fri Jun 7 12:39:12 2024   BR2   BR2(dhcp-config)#default-router 172.16.1.1
+Fri Jun 7 12:39:19 2024   BR2   BR2(dhcp-config)#dns-server 172.16.4.3
+Fri Jun 7 12:39:21 2024   BR2   BR2(dhcp-config)#exit
+Fri Jun 7 12:39:27 2024   BR2   BR2(config)#ip dhcp excluded-address 172.16.1.1 172.16.1.10
+
+Relay DHCP {provide IP address of the dhcp server}
+----------------------------------------------------------------------
+Fri Jun 7 12:39:59 2024   BR1   BR1(config)#int f0/0
+Fri Jun 7 12:40:07 2024   BR1   BR1(config-if)#ip helper-address 172.16.10.2
+Fri Jun 7 12:40:08 2024   BR1   BR1(config-if)#exit
+
++++++++++++++++
+At this point, Extended the topology to ISP (Demo Internet Connectivity). Basic IP Configuration---------------------------
+Fri Jun 28 08:52:15 2024   ISP   Router>enable
+Fri Jun 28 08:52:31 2024   ISP   Router#configure terminal 
+Fri Jun 28 08:52:49 2024   ISP   Router(config)#hostname ISP
+Fri Jun 28 08:53:42 2024   ISP   ISP(config)#int f0/0
+Fri Jun 28 08:53:50 2024   ISP   ISP(config-if)#ip add 8.8.8.1 255.0.0.0
+Fri Jun 7 10:56:25 2024    ISP   ISP(config-if)#ipv6 add 2001:211:FFE:8::1/64
+Fri Jun 28 08:53:53 2024   ISP   ISP(config-if)#no shutdown 
+Fri Jun 28 08:54:05 2024   ISP   ISP(config-if)#description Demo Internet
+Fri Jun 28 08:54:06 2024   ISP   ISP(config-if)#exit
+Fri Jun 28 08:54:13 2024   ISP   ISP(config)#int s0/1/0
+Fri Jun 28 08:54:46 2024   ISP   ISP(config-if)#ip add 11.11.11.1 255.255.255.252
+Fri Jun 7 10:56:25 2024    ISP   ISP(config-if)#ipv6 add 2001:211:DAC:11::1/64
+Fri Jun 28 08:54:53 2024   ISP   ISP(config-if)#description Link to BR1
+Fri Jun 28 08:54:55 2024   ISP   ISP(config-if)#no sh
+Fri Jun 28 08:54:56 2024   ISP   ISP(config-if)#exit
+ISP(config)#ipv6 unicast-routing
+
+Fri Jun 28 08:55:31 2024   BR1   BR1(config)#int s0/1/1
+Fri Jun 28 08:55:42 2024   BR1   BR1(config-if)#ip add 11.11.11.2 255.255.255.252
+Fri Jun 7 10:56:25 2024    BR1   BR1(config-if)#ipv6 add 2001:211:DAC:11::1/64
+Fri Jun 28 08:56:57 2024   BR1   BR1(config-if)#description Link to ISP
+Fri Jun 28 08:56:58 2024   BR1   BR1(config-if)#no shutdown 
+Fri Jun 28 08:57:00 2024   BR1   BR1(config-if)#exit
+
+Fri Jun 28 08:58:33 2024   BR1   BR1(config)#do show ip route
+
+4. Default Static Routing (commonly used when connecting an edge router to a service provider network)
+------------------------------------------------------------------------------------
+Fri Jun 28 09:04:01 2024   BR1   BR1(config)#ip route 0.0.0.0 0.0.0.0 11.11.11.1
+                                 BR1(config)#ipv6 route ::/0 2001:211:DAC:11::1
+
+Fri Jun 28 09:10:11 2024   BR2   BR2(config)#ip route 0.0.0.0 0.0.0.0 172.16.10.1                                                    BR2(config)#ipv6 route ::/0 2001:211:DAC:10::1
+
+Summary Static Routing of whole Class B (Demo)----------------------
+Fri Jun 28 09:07:49 2024   ISP   ISP(config)#ip route 172.16.0.0 255.240.0.0 11.11.11.2
+                                 ISP(config)#ipv6 route 2001:211:DAC::/48 2001:211:DAC:11::2
+
+Added extra module on BR1---
+Fri Jun 28 09:14:01 2024   BR1   BR1#copy running-config startup-config 
+
+Secondary Link Basic IP Configuration
+----------------------------------------------------
+Fri Jun 28 09:15:23 2024   ISP   ISP(config)#int s0/1/1
+Fri Jun 28 09:15:32 2024   ISP   ISP(config-if)#ip add 13.13.13.1 255.255.255.252
+Fri Jun 7 10:56:25 2024    ISP  ISP(config-if)#ipv6 add 2001:211:DAC:13::1/64
+Fri Jun 28 09:15:42 2024   ISP   ISP(config-if)#description Backup Link to BR1
+Fri Jun 28 09:15:44 2024   ISP   ISP(config-if)#no shutdown 
+Fri Jun 28 09:15:45 2024   ISP   ISP(config-if)#ex
+
+Fri Jun 28 09:15:57 2024   BR1   BR1(config)#int s0/3/0
+Fri Jun 28 09:16:07 2024   BR1   BR1(config-if)#ip add 13.13.13.2 255.255.255.252
+Fri Jun 7 10:56:25 2024    BR1   BR1(config-if)#ipv6 add 2001:211:DAC:13::2/64
+Fri Jun 28 09:16:14 2024   BR1   BR1(config-if)#description Backup Link to ISP
+Fri Jun 28 09:16:15 2024   BR1   BR1(config-if)#no shutdown 
+Fri Jun 28 09:16:16 2024   BR1   BR1(config-if)#ex
+
+5. Floating Static Routing (lower AD, higher route pririty)
+---------------------------------------------------------------
+Fri Jun 28 09:21:12 2024   BR1   BR1(config)#ip route 0.0.0.0 0.0.0.0 13.13.13.1 5
+                                 BR1(config)#ipv6 route ::/0 2001:211:DAC:13::1 5
+
+Fri Jun 28 09:22:00 2024   ISP   ISP(config)#ip route 172.16.0.0 255.240.0.0 13.13.13.2 5
+                                 ISP(config)#ipv6 route 2001:211:DAC::/48 2001:211:DAC:13::2 5
+
+

@@ -1,0 +1,74 @@
+Basic IP COnfiguration
+--------------------------------------------
+Fri Aug 23 08:56:31 2024   ISP   Router>enable
+Fri Aug 23 08:57:01 2024   ISP   Router#configure terminal 
+Fri Aug 23 08:57:15 2024   ISP   Router(config)#hostname ISP
+Fri Aug 23 08:57:55 2024   ISP   ISP(config)#int f0/0
+Fri Aug 23 08:58:02 2024   ISP   ISP(config-if)#ip add 8.8.8.1 255.0.0.0
+Fri Aug 23 08:58:11 2024   ISP   ISP(config-if)#description Demo Internet
+Fri Aug 23 08:58:14 2024   ISP   ISP(config-if)#no shutdown 
+Fri Aug 23 08:58:16 2024   ISP   ISP(config-if)#exit
+Fri Aug 23 08:58:28 2024   ISP   ISP(config)#int s0/1/0
+Fri Aug 23 09:01:36 2024   ISP   ISP(config-if)#ip add 11.11.11.1 255.255.255.252
+Fri Aug 23 09:02:00 2024   ISP   ISP(config-if)#description GW1 to BR1
+Fri Aug 23 09:02:02 2024   ISP   ISP(config-if)#no shutdown 
+Fri Aug 23 09:02:04 2024   ISP   ISP(config-if)#exit
+Fri Aug 23 09:02:58 2024   ISP   ISP(config)#int s0/1/1
+Fri Aug 23 09:03:05 2024   ISP   ISP(config-if)#ip add 12.12.12.1 255.255.255.252
+Fri Aug 23 09:03:12 2024   ISP   ISP(config-if)#description GW2 to BR1
+Fri Aug 23 09:03:14 2024   ISP   ISP(config-if)#no shutdown 
+Fri Aug 23 09:03:17 2024   ISP   ISP(config-if)#exit
+Fri Aug 23 09:03:29 2024   BR1-GW1   Router>en
+Fri Aug 23 09:03:30 2024   BR1-GW1   Router#conf t
+Fri Aug 23 09:03:35 2024   BR1-GW1   Router(config)#hostname BR1-GW1
+Fri Aug 23 09:03:38 2024   BR1-GW1   BR1-GW1(config)#int s0/2/0
+Fri Aug 23 09:03:50 2024   BR1-GW1   BR1-GW1(config-if)#ip add 11.11.11.2 255.255.255.252
+Fri Aug 23 09:04:03 2024   BR1-GW1   BR1-GW1(config-if)#description GW1 to ISP
+Fri Aug 23 09:04:04 2024   BR1-GW1   BR1-GW1(config-if)#no sh
+Fri Aug 23 09:04:04 2024   BR1-GW1   BR1-GW1(config-if)#ex
+Fri Aug 23 09:04:13 2024   BR1-GW2   Router>en
+Fri Aug 23 09:04:14 2024   BR1-GW2   Router#conf t
+Fri Aug 23 09:04:20 2024   BR1-GW2   Router(config)#hostname BR1-GW2
+Fri Aug 23 09:04:23 2024   BR1-GW2   BR1-GW2(config)#int s0/1/0
+Fri Aug 23 09:04:35 2024   BR1-GW2   BR1-GW2(config-if)#ip add 12.12.12.2 255.255.255.252
+Fri Aug 23 09:04:43 2024   BR1-GW2   BR1-GW2(config-if)#description GW2 to ISP
+Fri Aug 23 09:04:45 2024   BR1-GW2   BR1-GW2(config-if)#no sh
+Fri Aug 23 09:04:46 2024   BR1-GW2   BR1-GW2(config-if)#exit
+
+Fri Aug 23 09:17:04 2024   BR1-GW1   BR1-GW1(config)#int f0/0
+Fri Aug 23 09:17:13 2024   BR1-GW1   BR1-GW1(config-if)#ip add 172.16.100.1 255.255.255.0
+Fri Aug 23 09:17:20 2024   BR1-GW1   BR1-GW1(config-if)#description LAN Network
+Fri Aug 23 09:17:21 2024   BR1-GW1   BR1-GW1(config-if)#no sh
+Fri Aug 23 09:17:22 2024   BR1-GW1   BR1-GW1(config-if)#ex
+Fri Aug 23 09:17:28 2024   BR1-GW2   BR1-GW2(config)#int f0/0
+Fri Aug 23 09:17:35 2024   BR1-GW2   BR1-GW2(config-if)#ip add 172.16.100.2 255.255.255.0
+Fri Aug 23 09:17:44 2024   BR1-GW2   BR1-GW2(config-if)#description Backup Link to LAN
+Fri Aug 23 09:17:45 2024   BR1-GW2   BR1-GW2(config-if)#no sh
+Fri Aug 23 09:17:46 2024   BR1-GW2   BR1-GW2(config-if)#ex
+
+Static Routing between routers
+--------------------------------------------------------
+Fri Aug 23 09:12:38 2024   ISP   ISP(config)#ip route  172.16.100.0 255.255.255.0 11.11.11.2
+Fri Aug 23 09:13:57 2024   BR1-GW1   BR1-GW1(config)#ip route 0.0.0.0 0.0.0.0 11.11.11.1
+
+Fri Aug 23 09:15:17 2024   ISP   ISP(config)#ip route  172.16.100.0 255.255.255.0 12.12.12.2 5
+Fri Aug 23 09:15:50 2024   BR1-GW2   BR1-GW2(config)#ip route 0.0.0.0 0.0.0.0 12.12.12.1 5
+
+HSRP
+------------------------------------
+Fri Aug 23 09:27:27 2024   BR1-GW1   BR1-GW1(config)#int f0/0
+Fri Aug 23 09:27:58 2024   BR1-GW1   BR1-GW1(config-if)#standby version 2
+Fri Aug 23 09:29:02 2024   BR1-GW1   BR1-GW1(config-if)#standby 1 ip 172.16.100.3
+Fri Aug 23 09:32:04 2024   BR1-GW1   BR1-GW1(config-if)#standby 1 priority 150
+Fri Aug 23 09:33:19 2024   BR1-GW1   BR1-GW1(config-if)#standby 1 preempt 
+Fri Aug 23 09:34:00 2024   BR1-GW1   BR1-GW1(config-if)#ex
+
+Fri Aug 23 09:34:40 2024   BR1-GW2   BR1-GW2(config)#int f0/0
+Fri Aug 23 09:35:07 2024   BR1-GW2   BR1-GW2(config-if)#standby version 2
+Fri Aug 23 09:35:07 2024   BR1-GW2   BR1-GW2(config-if)#standby 1 ip 172.16.100.3
+Fri Aug 23 09:35:28 2024   BR1-GW2   BR1-GW2(config-if)#standby 1 preempt 
+Fri Aug 23 09:35:34 2024   BR1-GW2   BR1-GW2(config-if)#exit
+
+View HSRP---------------
+Fri Aug 23 09:36:19 2024   BR1-GW1   BR1-GW1#show standby brief 
+Fri Aug 23 09:37:36 2024   BR1-GW2   BR1-GW2#sh standby brief 

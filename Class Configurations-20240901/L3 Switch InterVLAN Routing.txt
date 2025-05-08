@@ -1,0 +1,132 @@
+1. Create VLAN
+---------------------------
+Fri Aug 30 11:03:08 2024   Core   Switch>en
+Fri Aug 30 11:03:13 2024   Core   Switch#show vlan brief 
+Fri Aug 30 11:03:46 2024   Core   Switch#conf t
+Fri Aug 30 11:04:00 2024   Core   Switch(config)#hostname Core
+Fri Aug 30 11:04:15 2024   Core   Core(config)#vlan 10
+Fri Aug 30 11:04:18 2024   Core   Core(config-vlan)#name Sales
+Fri Aug 30 11:04:19 2024   Core   Core(config-vlan)#exit
+Fri Aug 30 11:04:33 2024   Core   Core(config)#vlan 15
+Fri Aug 30 11:04:37 2024   Core   Core(config-vlan)#name Accounts
+Fri Aug 30 11:04:38 2024   Core   Core(config-vlan)#exit
+Fri Aug 30 11:04:39 2024   Core   Core(config)#vlan 20
+Fri Aug 30 11:04:42 2024   Core   Core(config-vlan)#name Voice
+Fri Aug 30 11:04:43 2024   Core   Core(config-vlan)#exit
+Fri Aug 30 11:04:46 2024   Core   Core(config)#vlan 25
+Fri Aug 30 11:04:50 2024   Core   Core(config-vlan)#name Management
+Fri Aug 30 11:04:51 2024   Core   Core(config-vlan)#exit
+Fri Aug 30 11:04:53 2024   Core   Core(config)#vlan 99
+Fri Aug 30 11:04:57 2024   Core   Core(config-vlan)#name Native
+Fri Aug 30 11:04:58 2024   Core   Core(config-vlan)#exit
+
+2. VTP COnfig
+-------------------------------
+Fri Aug 30 11:07:43 2024   Core   Core(config)#vtp mode server 
+Fri Aug 30 11:07:55 2024   Core   Core(config)#vtp domain aiub
+Fri Aug 30 11:08:01 2024   Core   Core(config)#vtp password cisco
+
+Fri Aug 30 11:08:48 2024   ALSW1   Switch(config)#hostname ALSW1
+Fri Aug 30 11:08:59 2024   ALSW1   ALSW1(config)#vtp mode client 
+Fri Aug 30 11:09:09 2024   ALSW1   ALSW1(config)#vtp domain aiub
+Fri Aug 30 11:09:14 2024   ALSW1   ALSW1(config)#vtp password cisco
+
+Fri Aug 30 11:13:42 2024   ALSW2   Switch(config)#hostname ALSW2
+Fri Aug 30 11:13:47 2024   ALSW2   ALSW2(config)#vtp mode client 
+Fri Aug 30 11:13:50 2024   ALSW2   ALSW2(config)#vtp domain aiub
+Fri Aug 30 11:13:54 2024   ALSW2   ALSW2(config)#vtp password cisco
+
+
+3. Switch-to-switch port trunk
+--------------------------------
+
+Fri Aug 30 11:09:57 2024   ALSW1   ALSW1(config)#int range f0/3-4
+Fri Aug 30 11:11:11 2024   Core   Core(config-if)#switchport trunk encapsulation dot1q 
+Fri Aug 30 11:11:30 2024   Core   Core(config-if)#switchport mode trunk 
+Fri Aug 30 11:12:32 2024   Core   Core(config-if)#exit
+
+Fri Aug 30 11:13:57 2024   ALSW1   ALSW1(config)#int f0/3
+Fri Aug 30 11:14:00 2024   ALSW1   ALSW1(config-if)#switchport mode trunk 
+Fri Aug 30 11:14:01 2024   ALSW1   ALSW1(config-if)#exit
+
+Fri Aug 30 11:13:57 2024   ALSW2   ALSW2(config)#int f0/4
+Fri Aug 30 11:14:00 2024   ALSW2   ALSW2(config-if)#switchport mode trunk 
+Fri Aug 30 11:14:01 2024   ALSW2   ALSW2(config-if)#exit
+
+4. VLAN ASsign on switchports
+-------------------------------------
+Fri Aug 30 11:15:15 2024   ALSW1   ALSW1(config)#int f0/1
+Fri Aug 30 11:15:18 2024   ALSW1   ALSW1(config-if)#switchport mode access 
+Fri Aug 30 11:15:23 2024   ALSW1   ALSW1(config-if)#switchport access vlan 10
+Fri Aug 30 11:15:24 2024   ALSW1   ALSW1(config-if)#exit
+
+Fri Aug 30 11:16:50 2024   ALSW2   ALSW2(config)#int f0/1
+Fri Aug 30 11:16:54 2024   ALSW2   ALSW2(config-if)#switchport mode access 
+Fri Aug 30 11:16:59 2024   ALSW2   ALSW2(config-if)#switchport access vlan 15
+Fri Aug 30 11:17:13 2024   ALSW2   ALSW2(config-if)#switchport voice vlan 20
+Fri Aug 30 11:17:29 2024   ALSW2   ALSW2(config-if)#mls qos trust cos 
+Fri Aug 30 11:18:43 2024   ALSW2   ALSW2(config-if)#exit
+
+Fri Aug 30 11:20:27 2024   ALSW2   ALSW2(config)#int f0/2
+Fri Aug 30 11:20:29 2024   ALSW2   ALSW2(config-if)#switchport mode access 
+Fri Aug 30 11:20:32 2024   ALSW2   ALSW2(config-if)#switchport access vlan 10
+Fri Aug 30 11:20:33 2024   ALSW2   ALSW2(config-if)#ex
+
+5. Inter VLAN Routing on L3 Switch using SVI 
+--------------------------------------------------------
+Fri Aug 30 11:26:05 2024   Core   Core(config)#int vlan 10
+Fri Aug 30 11:26:29 2024   Core   Core(config-if)#ip add 172.16.10.1 255.255.255.0
+Fri Aug 30 11:26:36 2024   Core   Core(config-if)#description Sales
+Fri Aug 30 11:26:37 2024   Core   Core(config-if)#no sh
+Fri Aug 30 11:26:38 2024   Core   Core(config-if)#ex
+Fri Aug 30 11:26:41 2024   Core   Core(config)#int vlan 15
+Fri Aug 30 11:26:48 2024   Core   Core(config-if)#ip add 172.16.15.1 255.255.255.0
+Fri Aug 30 11:26:51 2024   Core   Core(config-if)#description Accounts
+Fri Aug 30 11:26:54 2024   Core   Core(config-if)#no sh
+Fri Aug 30 11:26:54 2024   Core   Core(config-if)#ex
+Fri Aug 30 11:26:58 2024   Core   Core(config)#int vlan 20
+Fri Aug 30 11:27:07 2024   Core   Core(config-if)#ip add 172.16.20.1 255.255.255.128
+Fri Aug 30 11:27:11 2024   Core   Core(config-if)#description Voice
+Fri Aug 30 11:27:12 2024   Core   Core(config-if)#no sh
+Fri Aug 30 11:27:13 2024   Core   Core(config-if)#ex
+Fri Aug 30 11:27:17 2024   Core   Core(config)#int vlan 25
+Fri Aug 30 11:27:38 2024   Core   Core(config-if)#ip add 172.16.25.1 255.255.255.128
+Fri Aug 30 11:27:43 2024   Core   Core(config-if)#description Management
+Fri Aug 30 11:27:44 2024   Core   Core(config-if)#no sh
+Fri Aug 30 11:27:46 2024   Core   Core(config-if)#ex
+Fri Aug 30 11:27:49 2024   Core   Core(config)#int vlan 99
+Fri Aug 30 11:27:59 2024   Core   Core(config-if)#ip add 172.16.99.1 255.255.255.128
+Fri Aug 30 11:28:01 2024   Core   Core(config-if)#no sh
+Fri Aug 30 11:28:02 2024   Core   Core(config-if)#exit
+
+***Fri Aug 30 11:35:06 2024   Core   Core(config)#ip routing
+
+6. Basic IP COnfig
+---------------------------------------------
+Fri Aug 30 11:40:47 2024   ISP   Router>en
+Fri Aug 30 11:40:48 2024   ISP   Router#conf t
+Fri Aug 30 11:40:50 2024   ISP   Router(config)#hostname ISP
+Fri Aug 30 11:40:52 2024   ISP   ISP(config)#int f0/1
+Fri Aug 30 11:41:07 2024   ISP   ISP(config-if)#ip add 8.8.8.1 255.0.0.0
+Fri Aug 30 11:41:16 2024   ISP   ISP(config-if)#description Demo Internet
+Fri Aug 30 11:41:18 2024   ISP   ISP(config-if)#no shutdown 
+Fri Aug 30 11:41:19 2024   ISP   ISP(config-if)#ex
+Fri Aug 30 11:41:32 2024   ISP   ISP(config)#int f0/0
+Fri Aug 30 11:41:40 2024   ISP   ISP(config-if)#ip add 11.11.11.1 255.255.255.252
+Fri Aug 30 11:41:45 2024   ISP   ISP(config-if)#description Linkt o Core
+Fri Aug 30 11:41:47 2024   ISP   ISP(config-if)#no sh
+Fri Aug 30 11:41:49 2024   ISP   ISP(config-if)#exit
+
+***
+Fri Aug 30 11:42:17 2024   Core   Core(config)#int f0/1
+Fri Aug 30 11:43:14 2024   Core   Core(config-if)#no switchport 
+Fri Aug 30 11:43:30 2024   Core   Core(config-if)#ip add 11.11.11.2 255.255.255.252
+Fri Aug 30 11:43:54 2024   Core   Core(config-if)#description Link to ISP
+Fri Aug 30 11:43:56 2024   Core   Core(config-if)#no shutdown 
+Fri Aug 30 11:43:57 2024   Core   Core(config-if)#exit
+
+7. Static Routing between ISP and L3 Switch
+--------------------------------------------------
+Fri Aug 30 11:45:11 2024   Core   Core(config)#ip route 0.0.0.0 0.0.0.0 11.11.11.1
+Fri Aug 30 11:45:27 2024   ISP   ISP(config)#ip route 172.16.0.0 255.240.0.0 11.11.11.2
+
